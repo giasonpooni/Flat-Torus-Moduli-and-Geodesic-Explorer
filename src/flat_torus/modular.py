@@ -4,27 +4,12 @@ An SL(2, Z) matrix g = [[a, b], [c, d]] acts on the shape parameter by
 
     tau' = (a tau + b) / (c tau + d).
 
-The same closed geodesic is then described by a transformed winding.
-If the un-normalized bases are related by
+For that same g the labels of the same closed geodesic are
 
-    (omega1', omega2') = (omega1, omega2) g,
+    m' = a m - b n,    n' = -c m + d n.
 
-the labels transform as
-
-    (m, n)^T = g (m', n')^T,
-    (m', n')^T = g^{-1} (m, n)^T.
-
-The first-release unit test is the translation generator
-
-    T: tau |-> tau + 1,    g = [[1, 1], [0, 1]],    (m', n') = (m - n, n),
-
-which leaves the lattice itself unchanged and therefore leaves every
-loop length unchanged once the labels move with the basis:
-
-    ell_{m-n, n}(tau + 1) = ell_{m, n}(tau).
-
-Comparing the *same* integer labels before and after a basis change
-does not compare the same trajectory.
+That rule agrees with T and S individually. Using g^{-1} on the labels
+instead preserves length for one generator and fails for a composed word.
 """
 
 from __future__ import annotations
@@ -65,9 +50,49 @@ class ModularMatrix:
     def inverse(self) -> ModularMatrix:
         return ModularMatrix(self.d, -self.b, -self.c, self.a)
 
+    def compose(self, other: ModularMatrix) -> ModularMatrix:
+        """Return ``self * other`` (apply ``other`` first)."""
+        return ModularMatrix(
+            self.a * other.a + self.b * other.c,
+            self.a * other.b + self.b * other.d,
+            self.c * other.a + self.d * other.c,
+            self.c * other.b + self.d * other.d,
+        )
 
+    def __mul__(self, other: ModularMatrix) -> ModularMatrix:
+        if not isinstance(other, ModularMatrix):
+            return NotImplemented
+        return self.compose(other)
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, ModularMatrix):
+            return NotImplemented
+        return (self.a, self.b, self.c, self.d) == (other.a, other.b, other.c, other.d)
+
+    def __hash__(self) -> int:
+        return hash((self.a, self.b, self.c, self.d))
+
+    def as_tuple(self) -> tuple[int, int, int, int]:
+        return self.a, self.b, self.c, self.d
+
+    @property
+    def is_identity(self) -> bool:
+        return self.as_tuple() == (1, 0, 0, 1)
+
+    @property
+    def is_minus_identity(self) -> bool:
+        return self.as_tuple() == (-1, 0, 0, -1)
+
+
+IDENTITY = ModularMatrix(1, 0, 0, 1)
+MINUS_IDENTITY = ModularMatrix(-1, 0, 0, -1)
 T_GENERATOR = ModularMatrix(1, 1, 0, 1)
 S_GENERATOR = ModularMatrix(0, -1, 1, 0)
+
+
+def translation_matrix(shift: int) -> ModularMatrix:
+    """T^k = [[1, k], [0, 1]], sending tau |-> tau + k."""
+    return ModularMatrix(1, int(shift), 0, 1)
 
 
 def act_on_tau(matrix: ModularMatrix, shape: ShapeParameter) -> ShapeParameter:
@@ -79,33 +104,25 @@ def act_on_tau(matrix: ModularMatrix, shape: ShapeParameter) -> ShapeParameter:
 
 
 def act_on_winding(matrix: ModularMatrix, winding: Winding) -> Winding:
-    """Return the winding labels of the same geodesic in the new basis.
-
-    (m', n')^T = g^{-1} (m, n)^T.
-    """
-    inv = matrix.inverse()
-    m_new = inv.a * winding.m + inv.b * winding.n
-    n_new = inv.c * winding.m + inv.d * winding.n
+    """Return the winding labels of the same geodesic after tau' = g.tau."""
+    m_new = matrix.a * winding.m - matrix.b * winding.n
+    n_new = -matrix.c * winding.m + matrix.d * winding.n
     return Winding(m_new, n_new)
 
 
 def translate_tau(shape: ShapeParameter) -> ShapeParameter:
-    """T: tau |-> tau + 1."""
     return act_on_tau(T_GENERATOR, shape)
 
 
 def translate_winding(winding: Winding) -> Winding:
-    """Matching label change for T: (m, n) |-> (m - n, n)."""
     return act_on_winding(T_GENERATOR, winding)
 
 
 def invert_tau(shape: ShapeParameter) -> ShapeParameter:
-    """S: tau |-> -1/tau."""
     return act_on_tau(S_GENERATOR, shape)
 
 
 def invert_winding(winding: Winding) -> Winding:
-    """Matching label change for S: (m, n) |-> (n, -m)."""
     return act_on_winding(S_GENERATOR, winding)
 
 
@@ -114,7 +131,6 @@ def length_after_basis_change(
     winding: Winding,
     matrix: ModularMatrix,
 ) -> tuple[float, float]:
-    """Return (original length, transformed-description length)."""
     original = loop_length(shape, winding.m, winding.n)
     new_shape = act_on_tau(matrix, shape)
     new_winding = act_on_winding(matrix, winding)
