@@ -15,7 +15,7 @@ The organizing question is:
 > What belongs to the underlying mathematical object, what belongs to its
 > representation, and what changes when the object itself changes?
 
-## What is in the first release
+## What is delivered
 
 | Responsibility | What the testbed demonstrates |
 | --- | --- |
@@ -23,13 +23,17 @@ The organizing question is:
 | Closed-loop lengths | Exact formula `ell_{m,n}(tau) = |m + n tau| / sqrt(y)`. |
 | Periodic trajectories | Straight lines in the cover, wrapped through the parallelogram, with recorded edge crossings. |
 | Equivalent descriptions | `tau -> tau+1` with matching labels `(m, n) -> (m-n, n)` leaves the length unchanged. |
+| Fundamental-domain fold | A general SL(2, Z) word in T and S reduces tau to `|Re tau| <= 1/2`, `|tau| >= 1`, with labels moving with the word. |
 | Linked explorer | A figure drawn from the same objects the tests use. |
 
-The first-release claim is small and checkable:
+The first-release claim remains:
 
 > Construct one normalized torus, trace one closed trajectory, change its
 > representation, and demonstrate that the corresponding intrinsic result
 > survives.
+
+The fold increment adds: the same claim for an arbitrary SL(2, Z) word,
+not only the generators T and S.
 
 ## The mathematical object
 
@@ -62,8 +66,15 @@ labels must move with the basis,
 ell_{m-n, n}(tau + 1) = ell_{m, n}(tau)
 ```
 
+For a general matrix `g = [[a, b], [c, d]]` with `tau' = g \u00b7 tau`,
+
+```text
+m' = a m - b n,    n' = -c m + d n
+```
+
 Comparing the same integer labels before and after a basis change does
-not necessarily compare the same trajectory.
+not necessarily compare the same trajectory. Using `g^{-1}` on the labels
+is correct for a single generator and wrong for a composed word.
 
 ## Install and run
 
@@ -74,6 +85,7 @@ is the supported runner; a plain virtual environment also works.
 git clone https://github.com/giasonpooni/Flat-Torus-Moduli-and-Geodesic-Explorer.git
 cd Flat-Torus-Moduli-and-Geodesic-Explorer
 uv run --python 3.13 python examples/quickstart.py
+uv run --python 3.13 python examples/fold.py
 uv run --python 3.13 --with pytest pytest -q
 ```
 
@@ -84,20 +96,23 @@ python3 -m venv .venv
 source .venv/bin/activate
 pip install -e . pytest
 PYTHONPATH=src python examples/quickstart.py
+PYTHONPATH=src python examples/fold.py
 PYTHONPATH=src pytest -q
 ```
 
-The quickstart writes `results/quickstart.md`.
+The quickstart writes `results/quickstart.md`. The fold example writes
+`results/fold.md`.
 
-To draw the parallelogram view (optional matplotlib extra):
+To draw views (optional matplotlib extra):
 
 ```bash
 uv run --python 3.13 --with matplotlib python examples/explorer.py
+uv run --python 3.13 --with matplotlib python examples/fold.py
 ```
 
-That writes `results/explorer.png` from the same `ClosedTrajectory` object
-the tests close against. The doughnut picture of a torus is not used as
-geometry.
+The explorer writes `results/explorer.png` from the same `ClosedTrajectory`
+the tests close against. The fold figure is a discrete T/S word against
+the standard domain, not a hyperbolic geodesic in moduli space.
 
 ## Library layout
 
@@ -107,6 +122,8 @@ Normalized lattice and loop lengths
 Wrapped trajectories and edge crossings
         +
 Modular changes of representation
+        +
+SL(2, Z) words and fundamental-domain fold
         +
 Experiment contract and reports
 ```
@@ -118,20 +135,23 @@ from flat_torus import (
     trace_closed_geodesic,
     translate_tau,
     translate_winding,
+    fold_to_fundamental_domain,
+    word_from_matrix,
     run_first_release,
+    run_fold_experiment,
 )
 ```
 
 ## Scope and limits
 
-First release: one family of area-one flat tori, exact loop lengths,
-integer windings, the generators `T` and `S` of SL(2, Z), and a
-parallelogram renderer that does not own the metric.
+Delivered: one family of area-one flat tori, exact loop lengths, integer
+windings, the generators T and S, general SL(2, Z) words, a fundamental-
+domain fold, and a parallelogram renderer that does not own the metric.
 
-Not in this release:
+Not in this repository yet:
 
-- Paths through moduli space, or the hyperbolic metric on the upper half-plane.
-- Translation surfaces beyond the square torus (that is the next surface project).
+- Continuous paths through moduli space, or the hyperbolic metric on the upper half-plane.
+- Translation surfaces beyond the square torus.
 - Jacobi fields and nearby-geodesic sensitivity (companion testbed).
 - Covariance-manifold interpolation, or intrinsic geodesics on triangle meshes.
 
