@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from flat_torus.declaration import default_path, load
 from flat_torus import (
     format_record,
     loop_length,
@@ -20,7 +21,7 @@ REPORT = ROOT / "results" / "quickstart.md"
 
 
 def main() -> None:
-    record = run_first_release(tau=4j, m=1, n=1, start=0.15 + 0.22j)
+    record = run_first_release(declaration=load(default_path("first_release")))
     write_report(REPORT, record)
     print(format_record(record))
 
