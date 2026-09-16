@@ -66,7 +66,7 @@ labels must move with the basis,
 ell_{m-n, n}(tau + 1) = ell_{m, n}(tau)
 ```
 
-For a general matrix `g = [[a, b], [c, d]]` with `tau' = g \u00b7 tau`,
+For a general matrix `g = [[a, b], [c, d]]` with `tau' = g . tau`,
 
 ```text
 m' = a m - b n,    n' = -c m + d n
@@ -86,6 +86,7 @@ git clone https://github.com/giasonpooni/Flat-Torus-Moduli-and-Geodesic-Explorer
 cd Flat-Torus-Moduli-and-Geodesic-Explorer
 uv run --python 3.13 python examples/quickstart.py
 uv run --python 3.13 python examples/fold.py
+uv run --python 3.13 python examples/write_validation.py
 uv run --python 3.13 --with pytest pytest -q
 ```
 
@@ -97,11 +98,13 @@ source .venv/bin/activate
 pip install -e . pytest
 PYTHONPATH=src python examples/quickstart.py
 PYTHONPATH=src python examples/fold.py
+PYTHONPATH=src python examples/write_validation.py
 PYTHONPATH=src pytest -q
 ```
 
 The quickstart writes `results/quickstart.md`. The fold example writes
-`results/fold.md`.
+`results/fold.md`. `write_validation.py` writes JSON commitments under
+`validation/` for the CSE experiment harness.
 
 To draw views (optional matplotlib extra):
 
@@ -113,6 +116,22 @@ uv run --python 3.13 --with matplotlib python examples/fold.py
 The explorer writes `results/explorer.png` from the same `ClosedTrajectory`
 the tests close against. The fold figure is a discrete T/S word against
 the standard domain, not a hyperbolic geodesic in moduli space.
+
+## Bind a report in the CSE harness
+
+This repo does not import GAT and does not prove. After
+`examples/write_validation.py` you can hand the commitment file to CSE:
+
+```bash
+python -m gat.demo.experiment_harness \
+  --disposition validation/beam-b1-disposition-v1.json \
+  --commit path/to/torus-first-release-commitment-v1.json \
+  -o out/harness-bundle.json
+```
+
+The harness records the digest. It does not change the torus object and
+it does not put this algebra in an SP1 guest. Lengths are already
+replayable by re-running the experiment.
 
 ## Library layout
 
@@ -165,6 +184,7 @@ See [docs/SCOPE.md](docs/SCOPE.md) and [docs/METHODS.md](docs/METHODS.md).
 | --- | --- |
 | Flat-Torus Moduli and Geodesic Explorer | Starting project: geometry, equivalence, and spaces of shapes. |
 | [Geodesic Flow and Jacobi-Field Testbed](https://github.com/giasonpooni/Geodesic-Flow-and-Jacobi-Field-Testbed) | Numerical companion: sensitivity of nearby geodesics. |
+| [Construction State Estimator](https://github.com/giasonpooni/Construction-State-Estimator-for-BIM) | Consumer of report digests via the experiment harness. |
 | Translation-Surface Dynamics Explorer | Planned: explicit polygon gluing. |
 | Covariance Geometry and Geodesic Testbed | Planned independent branch. |
 | Intrinsic Surface Geodesics Testbed | Planned discrete-geometry branch. |
