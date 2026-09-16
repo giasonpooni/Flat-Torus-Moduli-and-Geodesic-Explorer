@@ -1,0 +1,30 @@
+schema = "flat-torus-declaration-v1"
+title = "SL(2, Z) word and fundamental-domain fold"
+notes = "The fold is a discrete T/S word, not a hyperbolic geodesic in moduli space."
+
+[object]
+tau_x = 2.4
+tau_y = 0.35
+reason = "A shape outside the standard fundamental domain so the fold is a nonempty word."
+
+[loop]
+m = 3
+n = 2
+start_re = 0.0
+start_im = 0.0
+
+[representation]
+kind = "modular-word"
+reason = "Applied word T S T^2, same product as T*T*S*T in the fold experiment. Labels move with the word."
+
+[[representation.letters]]
+kind = "T"
+power = 1
+
+[[representation.letters]]
+kind = "S"
+power = 1
+
+[[representation.letters]]
+kind = "T"
+power = 2

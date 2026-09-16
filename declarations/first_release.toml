@@ -1,0 +1,18 @@
+schema = "flat-torus-declaration-v1"
+title = "First release: normalized torus, closed geodesic, modular invariance"
+notes = "Lengths are exact algebraic evaluations. The metric is flat."
+
+[object]
+tau_x = 0.0
+tau_y = 4.0
+reason = "Elongated area-one torus from the project brief. Same area as tau = i, different shape."
+
+[loop]
+m = 1
+n = 1
+start_re = 0.15
+start_im = 0.22
+
+[representation]
+kind = "T"
+reason = "Change of lattice labels only: tau -> tau+1 and (m, n) -> (m-n, n)."
