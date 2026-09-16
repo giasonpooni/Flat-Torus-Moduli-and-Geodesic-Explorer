@@ -19,10 +19,10 @@ The organizing question is:
 
 | Responsibility | What the testbed demonstrates |
 | --- | --- |
-| Normalized lattice | Area-one generators `\u03c9\u2081 = y^{-1/2}`, `\u03c9\u2082 = \u03c4 y^{-1/2}`. |
-| Closed-loop lengths | Exact formula `\u2113_{m,n}(\u03c4) = \\|m + n \u03c4\\| / \u221ay`. |
+| Normalized lattice | Area-one generators `omega1 = y^{-1/2}`, `omega2 = tau * y^{-1/2}`. |
+| Closed-loop lengths | Exact formula `ell_{m,n}(tau) = |m + n tau| / sqrt(y)`. |
 | Periodic trajectories | Straight lines in the cover, wrapped through the parallelogram, with recorded edge crossings. |
-| Equivalent descriptions | `\u03c4 \u21a6 \u03c4+1` with matching labels `(m, n) \u21a6 (m\u2212n, n)` leaves the length unchanged. |
+| Equivalent descriptions | `tau -> tau+1` with matching labels `(m, n) -> (m-n, n)` leaves the length unchanged. |
 | Linked explorer | A figure drawn from the same objects the tests use. |
 
 The first-release claim is small and checkable:
@@ -34,13 +34,13 @@ The first-release claim is small and checkable:
 ## The mathematical object
 
 ```text
-\u03c4 = x + i y,    y > 0
-\u039b_\u03c4 = y^{-1/2} (\u2124 + \u03c4 \u2124)
-T_\u03c4 = \u2102 / \u039b_\u03c4
-\u2113_{m,n}(\u03c4) = |m + n \u03c4| / \u221ay
+tau = x + i y,    y > 0
+Lambda_tau = y^{-1/2} (Z + tau Z)
+T_tau = C / Lambda_tau
+ell_{m,n}(tau) = |m + n tau| / sqrt(y)
 ```
 
-`\u03c4` determines lattice *shape*. The factor `y^{-1/2}` removes area as a
+`tau` determines lattice *shape*. The factor `y^{-1/2}` removes area as a
 variable. The torus is the quotient obtained by identifying points that
 differ by a lattice vector.
 
@@ -48,18 +48,18 @@ Reference cases from the project brief, same area, different shape:
 
 | Shape parameter | First generating length | Second generating length | Fundamental area |
 | --- | --- | --- | --- |
-| `\u03c4 = i` | `1` | `1` | `1` |
-| `\u03c4 = 4i` | `1/2` | `2` | `1` |
+| `tau = i` | `1` | `1` | `1` |
+| `tau = 4i` | `1/2` | `2` | `1` |
 
 The second torus has a shorter non-contractible loop despite having the
 same area.
 
-A basis change is not a shape change. After `\u03c4' = \u03c4 + 1` the winding
+A basis change is not a shape change. After `tau' = tau + 1` the winding
 labels must move with the basis,
 
 ```text
-(m', n') = (m \u2212 n, n)
-\u2113_{m\u2212n, n}(\u03c4 + 1) = \u2113_{m, n}(\u03c4)
+(m', n') = (m - n, n)
+ell_{m-n, n}(tau + 1) = ell_{m, n}(tau)
 ```
 
 Comparing the same integer labels before and after a basis change does
@@ -125,7 +125,7 @@ from flat_torus import (
 ## Scope and limits
 
 First release: one family of area-one flat tori, exact loop lengths,
-integer windings, the generators `T` and `S` of SL(2, \u2124), and a
+integer windings, the generators `T` and `S` of SL(2, Z), and a
 parallelogram renderer that does not own the metric.
 
 Not in this release:
