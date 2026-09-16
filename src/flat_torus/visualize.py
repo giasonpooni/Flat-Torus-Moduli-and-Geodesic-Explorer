@@ -33,14 +33,12 @@ def draw_trajectory(
     path: Path | None = None,
     show_cover: bool = True,
 ) -> Path | None:
-    """Draw the identified parallelogram and the wrapped geodesic."""
     plt = _require_matplotlib()
     lattice = trajectory.lattice
     fig, axes = plt.subplots(1, 2 if show_cover else 1, figsize=(10 if show_cover else 5, 4.5))
     if not show_cover:
         axes = [axes]
     poly = parallelogram_vertices(lattice)
-
     ax = axes[0]
     ax.plot(poly[:, 0], poly[:, 1], color="black", lw=1.2)
     pts = trajectory.parallelogram_points
@@ -62,7 +60,6 @@ def draw_trajectory(
     ax.set_xlabel("Re z")
     ax.set_ylabel("Im z")
     ax.legend(loc="upper right", fontsize=8)
-
     if show_cover:
         ax = axes[1]
         cover = trajectory.cover_points
@@ -75,12 +72,44 @@ def draw_trajectory(
         ax.set_xlabel("Re z")
         ax.set_ylabel("Im z")
         ax.legend(loc="best", fontsize=8)
-
     m, n = trajectory.winding_tuple
     fig.suptitle(
         f"tau={lattice.shape.tau}, winding=({m},{n}), "
         f"ell={trajectory.length:.6g}, area={lattice.area():.6g}"
     )
+    fig.tight_layout()
+    if path is None:
+        plt.close(fig)
+        return None
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    fig.savefig(path, dpi=140)
+    plt.close(fig)
+    return path
+
+
+def draw_fold_path(result, *, path: Path | None = None) -> Path | None:
+    plt = _require_matplotlib()
+    from .fold import DOMAIN_RE_BOUND
+
+    fig, ax = plt.subplots(figsize=(6.5, 5.5))
+    arc = np.linspace(np.pi / 3, 2 * np.pi / 3, 80)
+    ax.plot(np.cos(arc), np.sin(arc), color="black", lw=1.2)
+    ymax = max(3.0, max(s.y for s in result.path) + 0.4)
+    ax.plot([-DOMAIN_RE_BOUND, -DOMAIN_RE_BOUND], [np.sqrt(0.75), ymax], color="black", lw=1.2)
+    ax.plot([DOMAIN_RE_BOUND, DOMAIN_RE_BOUND], [np.sqrt(0.75), ymax], color="black", lw=1.2)
+    xs = [s.x for s in result.path]
+    ys = [s.y for s in result.path]
+    ax.plot(xs, ys, color="C0", marker="o", lw=1.4, label="T/S word")
+    ax.scatter([xs[0]], [ys[0]], color="C3", zorder=3, label="start")
+    ax.scatter([xs[-1]], [ys[-1]], color="C2", zorder=3, label="reduced")
+    ax.set_aspect("equal", adjustable="box")
+    ax.set_xlim(-2.2, 2.2)
+    ax.set_ylim(0.0, ymax)
+    ax.set_xlabel("Re tau")
+    ax.set_ylabel("Im tau")
+    ax.set_title("Fundamental-domain fold (discrete word)")
+    ax.legend(loc="upper right", fontsize=8)
     fig.tight_layout()
     if path is None:
         plt.close(fig)
