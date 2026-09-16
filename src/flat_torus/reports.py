@@ -1,10 +1,37 @@
-"""Plain-text experiment reports."""
+"""Plain-text experiment reports and a record-integrity digest."""
 
 from __future__ import annotations
 
+import hashlib
+import json
 from pathlib import Path
 
 from .experiment import ExperimentRecord
+
+REPORT_SCHEMA = "torus-report-commitment-v1"
+CLAIM_SCOPE = "record-integrity-only"
+
+
+def canonical_digest(value: object) -> str:
+    encoded = json.dumps(
+        value,
+        allow_nan=False,
+        ensure_ascii=False,
+        separators=(",", ":"),
+        sort_keys=True,
+    ).encode("utf-8")
+    return hashlib.sha256(encoded).hexdigest()
+
+
+def report_commitment(record: ExperimentRecord) -> dict[str, object]:
+    payload = record.as_dict()
+    return {
+        "schema": REPORT_SCHEMA,
+        "kind": "torus-report",
+        "claim_scope": CLAIM_SCOPE,
+        "payload": payload,
+        "digest": canonical_digest(payload),
+    }
 
 
 def format_record(record: ExperimentRecord) -> str:
