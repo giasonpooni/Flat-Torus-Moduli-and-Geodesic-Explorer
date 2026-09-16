@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from .checks import check_unit_area
+from .declaration import TorusDeclaration, default_path, load
 from .experiment import CheckRecord, ExperimentRecord
 from .fold import fold_to_fundamental_domain, in_fundamental_domain, word_from_matrix
 from .lattice import ShapeParameter, normalized_lattice
@@ -85,7 +86,25 @@ def check_word_agrees_with_matrix(shape, winding, matrix, *, tol: float = LENGTH
     )
 
 
-def run_fold_experiment(*, tau: complex = 2.4 + 0.35j, m: int = 3, n: int = 2, extra: ModularMatrix | None = None) -> ExperimentRecord:
+def run_fold_experiment(
+    *,
+    declaration: TorusDeclaration | None = None,
+    tau: complex | None = None,
+    m: int | None = None,
+    n: int | None = None,
+    extra: ModularMatrix | None = None,
+) -> ExperimentRecord:
+    declared = declaration
+    if declared is None and tau is None and m is None and n is None and extra is None:
+        declared = load(default_path("fold"))
+    if declared is not None:
+        tau = declared.tau if tau is None else tau
+        m = declared.winding.m if m is None else m
+        n = declared.winding.n if n is None else n
+        extra = declared.representation.matrix() if extra is None else extra
+    tau = 2.4 + 0.35j if tau is None else tau
+    m = 3 if m is None else m
+    n = 2 if n is None else n
     shape = ShapeParameter.from_tau(tau)
     winding = Winding(m, n)
     extra = extra or (T_GENERATOR * T_GENERATOR * S_GENERATOR * T_GENERATOR)
@@ -112,7 +131,7 @@ def run_fold_experiment(*, tau: complex = 2.4 + 0.35j, m: int = 3, n: int = 2, e
     folded_pair = folded.length_pair()
     folded_length = folded_pair[1] if folded_pair else None
     return ExperimentRecord(
-        title="SL(2, Z) word and fundamental-domain fold",
+        title=(declared.title if declared is not None else "SL(2, Z) word and fundamental-domain fold"),
         mathematical_specification={
             "object": "area-one flat torus, described by any tau in the upper half-plane",
             "domain": "|Re(tau)| <= 1/2 and |tau| >= 1",
@@ -125,6 +144,7 @@ def run_fold_experiment(*, tau: complex = 2.4 + 0.35j, m: int = 3, n: int = 2, e
             "winding": winding.as_tuple(),
             "applied_matrix": extra.as_tuple(),
             "applied_word": word_from_matrix(extra).as_pairs(),
+            "declaration": None if declared is None else declared.as_dict(),
         },
         result={
             "tau_after_matrix": after_extra.tau,
