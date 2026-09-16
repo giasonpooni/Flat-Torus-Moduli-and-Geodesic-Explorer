@@ -1,0 +1,44 @@
+"""Plain-text experiment reports."""
+
+from __future__ import annotations
+
+from pathlib import Path
+
+from .experiment import ExperimentRecord
+
+
+def format_record(record: ExperimentRecord) -> str:
+    status = "PASS" if record.passed else "FAIL"
+    lines = [
+        f"# {record.title}",
+        "",
+        f"Overall: {status}",
+        "",
+        "## Mathematical specification",
+        "",
+    ]
+    for key, value in record.mathematical_specification.items():
+        lines.append(f"- {key}: {value}")
+    lines.extend(["", "## Experiment specification", ""])
+    for key, value in record.experiment_specification.items():
+        lines.append(f"- {key}: {value}")
+    lines.extend(["", "## Result", ""])
+    for key, value in record.result.items():
+        lines.append(f"- {key}: {value}")
+    lines.extend(["", "## Verification", ""])
+    for check in record.verification:
+        mark = "PASS" if check.passed else "FAIL"
+        tol = "" if check.tolerance is None else f" (tol={check.tolerance:g})"
+        lines.append(f"- [{mark}] {check.name}: {check.details}{tol}")
+    if record.limitations:
+        lines.extend(["", "## Limitations", ""])
+        for note in record.limitations:
+            lines.append(f"- {note}")
+    lines.append("")
+    return "\n".join(lines)
+
+
+def write_report(path: Path, record: ExperimentRecord) -> Path:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(format_record(record), encoding="utf-8")
+    return path
