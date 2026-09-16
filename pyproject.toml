@@ -1,0 +1,26 @@
+[project]
+name = "flat-torus-moduli-and-geodesic-explorer"
+version = "0.1.0"
+description = "An interactive computational testbed for area-one flat tori, demonstrating geodesic trajectories, closed-loop lengths, and invariance under changes of lattice representation."
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+requires-python = ">=3.12"
+dependencies = ["numpy>=2.0"]
+
+[project.optional-dependencies]
+viz = ["matplotlib>=3.8"]
+
+[dependency-groups]
+dev = ["pytest>=8", "matplotlib>=3.8"]
+
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/flat_torus"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
