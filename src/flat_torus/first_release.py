@@ -10,6 +10,7 @@ from .checks import (
     check_translation_invariance,
     check_unit_area,
 )
+from .declaration import TorusDeclaration, default_path, load
 from .experiment import ExperimentRecord
 from .lattice import normalized_lattice
 from .lengths import Winding, loop_length
@@ -19,12 +20,29 @@ from .trajectories import trace_closed_geodesic
 
 def run_first_release(
     *,
-    tau: complex = 4j,
-    m: int = 1,
-    n: int = 1,
-    start: complex = 0j,
+    declaration: TorusDeclaration | None = None,
+    tau: complex | None = None,
+    m: int | None = None,
+    n: int | None = None,
+    start: complex | None = None,
 ) -> ExperimentRecord:
-    """Construct one normalized torus, trace one closed trajectory, change basis."""
+    """Construct one normalized torus, trace one closed trajectory, change basis.
+
+    With no arguments the committed first-release declaration is the object.
+    Keywords remain for tests that vary one field.
+    """
+    declared = declaration
+    if declared is None and tau is None and m is None and n is None and start is None:
+        declared = load(default_path("first_release"))
+    if declared is not None:
+        tau = declared.tau if tau is None else tau
+        m = declared.winding.m if m is None else m
+        n = declared.winding.n if n is None else n
+        start = declared.start if start is None else start
+    tau = 4j if tau is None else tau
+    m = 1 if m is None else m
+    n = 1 if n is None else n
+    start = 0j if start is None else start
     lattice = normalized_lattice(tau)
     winding = Winding(m, n)
     length = loop_length(lattice, winding.m, winding.n)
@@ -45,7 +63,7 @@ def run_first_release(
     ]
 
     return ExperimentRecord(
-        title="First release: normalized torus, closed geodesic, modular invariance",
+        title=(declared.title if declared is not None else "First release: normalized torus, closed geodesic, modular invariance"),
         mathematical_specification={
             "object": "area-one flat torus T_tau = C / Lambda_tau",
             "metric": "flat Euclidean metric on the parallelogram, identified by Lambda_tau",
@@ -60,6 +78,7 @@ def run_first_release(
             "start": str(start),
             "basis_change": "T: tau |-> tau+1 with (m, n) |-> (m-n, n)",
             "samples": int(traj.times.size),
+            "declaration": None if declared is None else declared.as_dict(),
         },
         result={
             "omega1": lattice.omega1,
