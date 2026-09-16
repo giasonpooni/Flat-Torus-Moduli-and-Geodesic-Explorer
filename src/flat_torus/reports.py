@@ -12,9 +12,33 @@ REPORT_SCHEMA = "torus-report-commitment-v1"
 CLAIM_SCOPE = "record-integrity-only"
 
 
+def jsonable(value: object) -> object:
+    """JSON payload for a pinned report. Complex -> {re, im}. Numpy scalars -> Python."""
+    if value is None or isinstance(value, str):
+        return value
+    if isinstance(value, bool):
+        return bool(value)
+    if isinstance(value, dict):
+        return {str(key): jsonable(item) for key, item in value.items()}
+    if isinstance(value, (list, tuple)):
+        return [jsonable(item) for item in value]
+    if isinstance(value, complex):
+        return {"re": float(value.real), "im": float(value.imag)}
+    if hasattr(value, "item") and not isinstance(value, (bytes, bytearray)):
+        try:
+            return jsonable(value.item())
+        except (AttributeError, ValueError):
+            pass
+    if isinstance(value, int) and not isinstance(value, bool):
+        return int(value)
+    if isinstance(value, float):
+        return float(value)
+    raise TypeError(f"report payload cannot encode {type(value).__name__}")
+
+
 def canonical_digest(value: object) -> str:
     encoded = json.dumps(
-        value,
+        jsonable(value),
         allow_nan=False,
         ensure_ascii=False,
         separators=(",", ":"),
@@ -24,7 +48,7 @@ def canonical_digest(value: object) -> str:
 
 
 def report_commitment(record: ExperimentRecord) -> dict[str, object]:
-    payload = record.as_dict()
+    payload = jsonable(record.as_dict())
     return {
         "schema": REPORT_SCHEMA,
         "kind": "torus-report",
