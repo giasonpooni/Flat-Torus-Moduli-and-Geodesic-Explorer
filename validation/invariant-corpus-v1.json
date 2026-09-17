@@ -1,0 +1,11 @@
+{
+  "schema": "invariant-corpus-v1",
+  "claim_scope": "computational-integrity-only",
+  "cites": "giasonpooni/Construction-State-Estimator-for-BIM",
+  "invariants": [
+    {"id": "moduli.area-one", "kind": "invariant", "statement": "area-one flat torus class survives change of lattice representation."}
+  ],
+  "free_coordinates": [
+    {"id": "var.geodesic-point", "quantity": "position", "needs": ["declared-lattice"]}
+  ]
+}
